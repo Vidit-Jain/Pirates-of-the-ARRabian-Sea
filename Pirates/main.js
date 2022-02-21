@@ -83,25 +83,39 @@ function animate() {
 	if (ship.obj) {
 		let pos = ship.obj.position;
 		camera.lookAt(pos);
-		CameraView = new THREE.Vector3(0, 1, -10);
+		CameraView = new THREE.Vector3(0, -4, -10);
 		CameraView.applyAxisAngle(Yaxis, ship.obj.rotation.y);
 		// console.log(CameraView);
 		let angl = ship.obj.position.clone().sub(CameraView);
 		// console.log(ship.obj.rotation.y);
 		// camera.position.set(CameraView.x, CameraView.y, CameraView.z);
 		// console.log(delta);
+		let ForwardVector = new THREE.Vector3(0, 0, -5);
+		ForwardVector.applyAxisAngle(Yaxis, ship.obj.rotation.y);
 		camera.position.set(angl.x, angl.y, angl.z);
+		let Xaxis = new THREE.Vector3(1, 0, 0);
+		Xaxis.applyAxisAngle(Yaxis, ship.obj.position.y);
 		if (moveForward) {
-			ship.obj.position.z += moveSpeed * delta;
+			let tempVec = Object.assign({}, ship.obj.position);
+			ship.obj.position.set(0,0,0);
+			// ship.obj.rotation.x = -0.1;
+			ship.obj.position.set(tempVec.x, tempVec.y, tempVec.z);
+			ship.obj.position.add(ForwardVector.clone().multiplyScalar(delta));
 		}
 		if (moveBackward) {
-			ship.obj.position.z -= moveSpeed * delta;
-		}
-		if (moveRight) {
-			ship.obj.rotation.y -= rotateSpeed * delta;
+			let tempVec = Object.assign({}, ship.obj.position);
+			ship.obj.position.set(0,0,0);
+			// ship.obj.rotation.x = 0.1;
+			ship.obj.position.set(tempVec.x, tempVec.y, tempVec.z);
+			ship.obj.position.sub(ForwardVector.clone().multiplyScalar(delta));
 		}
 		if (moveLeft) {
 			ship.obj.rotation.y += rotateSpeed * delta;
+			ship.obj.rotation.z = 0.3;
+		}
+		if (moveRight) {
+			ship.obj.rotation.y -= rotateSpeed * delta;
+			ship.obj.rotation.z = -0.3;
 		}
 	}
 
@@ -124,25 +138,21 @@ const onKeyDown = function (event) {
 		case 'ArrowUp':
 		case 'KeyW':
 			moveForward = true;
-			ship.obj.rotation.x = -0.1;
 			break;
 
 		case 'ArrowLeft':
 		case 'KeyA':
 			moveLeft = true;
-			ship.obj.rotation.z = 0.3;
 			break;
 
 		case 'ArrowDown':
 		case 'KeyS':
-			ship.obj.rotation.x = 0.1;
 			moveBackward = true;
 			break;
 
 		case 'ArrowRight':
 		case 'KeyD':
 			moveRight = true;
-			ship.obj.rotation.z = -0.3;
 			break;
 
 		// case 'Space':
