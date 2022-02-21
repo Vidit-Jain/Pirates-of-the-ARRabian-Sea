@@ -1,6 +1,7 @@
 import * as THREE from "three"
-
-let camera, scene, renderer, cube;
+// import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import {Ship} from "./Ship.js"
+let camera, scene, renderer, cube, cube2, a;
 
 function init() {
 	// Init scene
@@ -22,24 +23,38 @@ function init() {
 
 	// Render to canvas element
 	document.body.appendChild(renderer.domElement);
+	
+	// a = new THREE.Group();
+	// // Init BoxGeometry object (rectangular cuboid)
+	// const geometry = new THREE.BoxGeometry(3, 3, 8);
+	// const geometry2 = new THREE.BoxGeometry(1, 1, 2);
 
-	// Init BoxGeometry object (rectangular cuboid)
-	const geometry = new THREE.BoxGeometry(3, 3, 3);
+	// const material2 = new THREE.MeshBasicMaterial({color: 0xffffff});
+	// // Create material with color
+	// const texture = new THREE.TextureLoader().load('./textures/wood.jpeg');
+	// const material = new THREE.MeshBasicMaterial({map: texture});
 
-	// Create material with color
-	const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
+	
+	// // Add texture - 
+	// // const texture = new THREE.TextureLoader().load('textures/crate.gif');
 
-	// Add texture - 
-	// const texture = new THREE.TextureLoader().load('textures/crate.gif');
+	// // Create material with texture
+	// // const material = new THREE.MeshBasicMaterial({ map: texture });
 
-	// Create material with texture
-	// const material = new THREE.MeshBasicMaterial({ map: texture });
+	// // Create mesh with geo and material
+	// cube = new THREE.Mesh(geometry, material);
+	// cube2 = new THREE.Mesh(geometry2, material2);
 
-	// Create mesh with geo and material
-	cube = new THREE.Mesh(geometry, material);
-	// Add to scene
-	scene.add(cube);
-
+	// // Add to scene
+	// cube2.position.y = 5;
+	// a.add(cube);
+	// a.add(cube2);
+	a = new Ship(scene);
+	// scene.add(a);
+	
+	const light = new THREE.DirectionalLight(0xffffff, 1);
+	light.position.set(2, 2, 5);
+	scene.add(light);
 	// Position camera
 	camera.position.z = 5;
 }
@@ -51,7 +66,7 @@ function animate() {
 	// Rotate cube (Change values to change speed)
 	//cube.rotation.x += 0.01;
 	//cube.rotation.y += 0.01;
-	cube.rotation.z += 0.01;
+	// cube.rotation.z += 0.01;
 
 	renderer.render(scene, camera);
 }
@@ -69,19 +84,27 @@ function onWindowResize() {
 
 window.addEventListener("keydown", function (event) {
 	if (event.key == "W" || event.key == "w") {
-	  cube.position.z += 0.05;
+	  a.obj.position.z += 0.05;
 	  return;
 	}
 	if (event.key == "S" || event.key == "s") {
-	  cube.position.z -= 0.05;
+	  a.obj.position.z -= 0.05;
 	  return;
 	}
 	if (event.key == "A" || event.key == "a") {
-	  cube.position.x -= 0.05;
+	  a.obj.position.x -= 0.05;
 	  return;
 	}
 	if (event.key == "d" || event.key == "D") {
-	  cube.position.x += 0.05;
+	  a.obj.position.x += 0.05;
+	  return;
+	}
+	if (event.key == "Q" || event.key == "q") {
+	  a.obj.position.y += 0.05;
+	  return;
+	}
+	if (event.key == "E" || event.key == "e") {
+	  a.obj.position.y -= 0.05;
 	  return;
 	}
 	// if (event.key == "ArrowDown") {
