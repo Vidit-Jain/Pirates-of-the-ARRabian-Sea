@@ -42,7 +42,10 @@ function init() {
 
 	
 	// // Add texture - 
-	const texture = new THREE.TextureLoader().load('textures/text_example.jpeg');
+	const texture = new THREE.TextureLoader().load('textures/water.jpg');
+	texture.wrapS = THREE.RepeatWrapping;
+	texture.wrapT = THREE.RepeatWrapping;
+	texture.repeat.set( 100, 100 );
 
 	// // Create material with texture
 	const material = new THREE.MeshBasicMaterial({ map: texture });
@@ -96,26 +99,29 @@ function animate() {
 		let Xaxis = new THREE.Vector3(1, 0, 0);
 		Xaxis.applyAxisAngle(Yaxis, ship.obj.position.y);
 		if (moveForward) {
-			let tempVec = Object.assign({}, ship.obj.position);
-			ship.obj.position.set(0,0,0);
-			// ship.obj.rotation.x = -0.1;
-			ship.obj.position.set(tempVec.x, tempVec.y, tempVec.z);
-			ship.obj.position.add(ForwardVector.clone().multiplyScalar(delta));
+			let forward = ForwardVector.clone().multiplyScalar(delta)
+			ship.obj.position.add(forward);
+			cube.position.add(forward);
 		}
 		if (moveBackward) {
-			let tempVec = Object.assign({}, ship.obj.position);
-			ship.obj.position.set(0,0,0);
-			// ship.obj.rotation.x = 0.1;
-			ship.obj.position.set(tempVec.x, tempVec.y, tempVec.z);
-			ship.obj.position.sub(ForwardVector.clone().multiplyScalar(delta));
+			let forward = ForwardVector.clone().multiplyScalar(delta)
+			ship.obj.position.sub(forward);
+			cube.position.sub(forward);
 		}
 		if (moveLeft) {
+			let tempVec = Object.assign({}, ship.obj.position);
+			ship.obj.position.set(0,0,0);
 			ship.obj.rotation.y += rotateSpeed * delta;
 			ship.obj.rotation.z = 0.3;
+			ship.obj.position.set(tempVec.x, tempVec.y, tempVec.z);
 		}
 		if (moveRight) {
+			let tempVec = Object.assign({}, ship.obj.position);
+			ship.obj.position.set(0,0,0);
 			ship.obj.rotation.y -= rotateSpeed * delta;
 			ship.obj.rotation.z = -0.3;
+			ship.obj.position.set(tempVec.x, tempVec.y, tempVec.z);
+			console.log(cube.position);
 		}
 	}
 
