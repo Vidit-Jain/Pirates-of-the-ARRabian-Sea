@@ -52,7 +52,6 @@ export class Ship{
         var loader = new GLTFLoader();
         loader.load("./models/ship_light.glb", (obj) => {
             obj.scene.scale.set(0.1,0.1,0.1);
-            obj.scene.rotation.y += Math.PI;
             obj.scene.position.z = -5;
             this.obj = obj.scene;
             scene.add(obj.scene);

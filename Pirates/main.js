@@ -1,7 +1,10 @@
 import * as THREE from "three"
+import { Camera } from "three";
 // import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import {Ship} from "./Ship.js"
 let camera, scene, renderer, cube, cube2, a;
+let CameraView = new THREE.Vector3(0, 2, 5);
+let Yaxis = new THREE.Vector3(0, 1, 0);
 
 function init() {
 	// Init scene
@@ -52,8 +55,10 @@ function init() {
 	a = new Ship(scene);
 	// scene.add(a);
 	
-	const light = new THREE.DirectionalLight(0xffffff, 1);
+	const light = new THREE.DirectionalLight(0xffffff, 0.3);
 	light.position.set(2, 2, 5);
+	const Ambientlight = new THREE.AmbientLight(0xffffff, 0.7); // soft white light
+	scene.add(Ambientlight);
 	scene.add(light);
 	// Position camera
 	camera.position.z = 5;
@@ -67,8 +72,23 @@ function animate() {
 	//cube.rotation.x += 0.01;
 	//cube.rotation.y += 0.01;
 	// cube.rotation.z += 0.01;
+	// camera.getWorldDirection()
+	// camera.lookAt(a.position);
+	// camera.lookAt(new THREE.Vector3(a.position.x, a.position.y, a.position.z));
+	if (a.obj) {
+		let pos = a.obj.position;
+		camera.lookAt(pos);
+		CameraView = new THREE.Vector3(0, 1, -10);
+		CameraView.applyAxisAngle(Yaxis, a.obj.rotation.y);
+		// console.log(CameraView);
+		let angl = a.obj.position.clone().sub(CameraView);
+		console.log(a.obj.rotation.y);
+		// camera.position.set(CameraView.x, CameraView.y, CameraView.z);
+		camera.position.set(angl.x, angl.y, angl.z);
+	}
 
 	renderer.render(scene, camera);
+
 }
 
 function onWindowResize() {
@@ -92,11 +112,12 @@ window.addEventListener("keydown", function (event) {
 	  return;
 	}
 	if (event.key == "A" || event.key == "a") {
-	  a.obj.position.x -= 0.05;
+	  a.obj.rotation.y -= 0.05;
 	  return;
 	}
 	if (event.key == "d" || event.key == "D") {
-	  a.obj.position.x += 0.05;
+	//   a.obj.position.x += 0.05;
+	  a.obj.rotation.y += 0.05;
 	  return;
 	}
 	if (event.key == "Q" || event.key == "q") {
