@@ -53,6 +53,7 @@ export class Ship{
         loader.load("./models/ship_light.glb", (obj) => {
             obj.scene.scale.set(0.1,0.1,0.1);
             obj.scene.position.z = -5;
+            obj.scene.position.y = 0.5;
             this.obj = obj.scene;
             scene.add(obj.scene);
         });

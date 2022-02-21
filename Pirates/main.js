@@ -2,10 +2,13 @@ import * as THREE from "three"
 import { Camera } from "three";
 // import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import {Ship} from "./Ship.js"
-let camera, scene, renderer, cube, cube2, a;
+let camera, scene, renderer, cube, cube2, ship;
+let moveForward = false, moveBackward = false, moveRight = false, moveLeft = false;
 let CameraView = new THREE.Vector3(0, 2, 5);
 let Yaxis = new THREE.Vector3(0, 1, 0);
-
+let rotateSpeed = 1;
+let moveSpeed = 5;
+let clock = new THREE.Clock();
 function init() {
 	// Init scene
 	scene = new THREE.Scene();
@@ -29,7 +32,7 @@ function init() {
 	
 	// a = new THREE.Group();
 	// // Init BoxGeometry object (rectangular cuboid)
-	// const geometry = new THREE.BoxGeometry(3, 3, 8);
+	const geometry = new THREE.BoxGeometry(1000, 0.2, 1000);
 	// const geometry2 = new THREE.BoxGeometry(1, 1, 2);
 
 	// const material2 = new THREE.MeshBasicMaterial({color: 0xffffff});
@@ -39,29 +42,30 @@ function init() {
 
 	
 	// // Add texture - 
-	// // const texture = new THREE.TextureLoader().load('textures/crate.gif');
+	const texture = new THREE.TextureLoader().load('textures/text_example.jpeg');
 
 	// // Create material with texture
-	// // const material = new THREE.MeshBasicMaterial({ map: texture });
+	const material = new THREE.MeshBasicMaterial({ map: texture });
 
 	// // Create mesh with geo and material
-	// cube = new THREE.Mesh(geometry, material);
+	cube = new THREE.Mesh(geometry, material);
+	cube.position.y = -5;
 	// cube2 = new THREE.Mesh(geometry2, material2);
 
 	// // Add to scene
 	// cube2.position.y = 5;
 	// a.add(cube);
 	// a.add(cube2);
-	a = new Ship(scene);
-	// scene.add(a);
+	ship = new Ship(scene);
+	scene.add(cube);
 	
 	const light = new THREE.DirectionalLight(0xffffff, 0.3);
 	light.position.set(2, 2, 5);
-	const Ambientlight = new THREE.AmbientLight(0xffffff, 0.7); // soft white light
+	const Ambientlight = new THREE.AmbientLight(0xffffff, 0.7); 
 	scene.add(Ambientlight);
 	scene.add(light);
 	// Position camera
-	camera.position.z = 5;
+	// camera.position.z = 5;
 }
 
 // Draw the scene every time the screen is refreshed
@@ -75,16 +79,30 @@ function animate() {
 	// camera.getWorldDirection()
 	// camera.lookAt(a.position);
 	// camera.lookAt(new THREE.Vector3(a.position.x, a.position.y, a.position.z));
-	if (a.obj) {
-		let pos = a.obj.position;
+	let delta = clock.getDelta();
+	if (ship.obj) {
+		let pos = ship.obj.position;
 		camera.lookAt(pos);
 		CameraView = new THREE.Vector3(0, 1, -10);
-		CameraView.applyAxisAngle(Yaxis, a.obj.rotation.y);
+		CameraView.applyAxisAngle(Yaxis, ship.obj.rotation.y);
 		// console.log(CameraView);
-		let angl = a.obj.position.clone().sub(CameraView);
-		console.log(a.obj.rotation.y);
+		let angl = ship.obj.position.clone().sub(CameraView);
+		// console.log(ship.obj.rotation.y);
 		// camera.position.set(CameraView.x, CameraView.y, CameraView.z);
+		// console.log(delta);
 		camera.position.set(angl.x, angl.y, angl.z);
+		if (moveForward) {
+			ship.obj.position.z += moveSpeed * delta;
+		}
+		if (moveBackward) {
+			ship.obj.position.z -= moveSpeed * delta;
+		}
+		if (moveRight) {
+			ship.obj.rotation.y -= rotateSpeed * delta;
+		}
+		if (moveLeft) {
+			ship.obj.rotation.y += rotateSpeed * delta;
+		}
 	}
 
 	renderer.render(scene, camera);
@@ -100,43 +118,75 @@ function onWindowResize() {
 	renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
+const onKeyDown = function (event) {
+	switch (event.code) {
 
+		case 'ArrowUp':
+		case 'KeyW':
+			moveForward = true;
+			ship.obj.rotation.x = -0.1;
+			break;
 
-window.addEventListener("keydown", function (event) {
-	if (event.key == "W" || event.key == "w") {
-	  a.obj.position.z += 0.05;
-	  return;
-	}
-	if (event.key == "S" || event.key == "s") {
-	  a.obj.position.z -= 0.05;
-	  return;
-	}
-	if (event.key == "A" || event.key == "a") {
-	  a.obj.rotation.y -= 0.05;
-	  return;
-	}
-	if (event.key == "d" || event.key == "D") {
-	//   a.obj.position.x += 0.05;
-	  a.obj.rotation.y += 0.05;
-	  return;
-	}
-	if (event.key == "Q" || event.key == "q") {
-	  a.obj.position.y += 0.05;
-	  return;
-	}
-	if (event.key == "E" || event.key == "e") {
-	  a.obj.position.y -= 0.05;
-	  return;
-	}
-	// if (event.key == "ArrowDown") {
-	//   decelerate = true;
-	//   return;
-	// }
-	// if (event.key == "R" || event.key == "r") {
-	//   reset();
-	//   return;
-	// }
-  });
+		case 'ArrowLeft':
+		case 'KeyA':
+			moveLeft = true;
+			ship.obj.rotation.z = 0.3;
+			break;
 
+		case 'ArrowDown':
+		case 'KeyS':
+			ship.obj.rotation.x = 0.1;
+			moveBackward = true;
+			break;
+
+		case 'ArrowRight':
+		case 'KeyD':
+			moveRight = true;
+			ship.obj.rotation.z = -0.3;
+			break;
+
+		// case 'Space':
+		// 	if ( canJump === true ) velocity.y += 350;
+		// 	canJump = false;
+		// 	break;
+
+	}
+
+};
+
+const onKeyUp = function (event) {
+
+	switch (event.code) {
+
+		case 'ArrowUp':
+		case 'KeyW':
+			moveForward = false;
+			ship.obj.rotation.x = 0.0; 
+			break;
+
+		case 'ArrowLeft':
+		case 'KeyA':
+			moveLeft = false;
+			ship.obj.rotation.z = 0.0;
+			break;
+
+		case 'ArrowDown':
+		case 'KeyS':
+			ship.obj.rotation.x = 0.0; 
+			moveBackward = false;
+			break;
+
+		case 'ArrowRight':
+		case 'KeyD':
+			moveRight = false;
+			ship.obj.rotation.z = 0.0;
+			break;
+
+	}
+
+};
+
+document.addEventListener( 'keydown', onKeyDown );
+document.addEventListener( 'keyup', onKeyUp );
 init();
 animate();
