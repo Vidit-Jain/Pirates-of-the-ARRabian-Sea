@@ -1,19 +1,17 @@
 import * as THREE from "three"
 import {Ship} from "./Ship.js"
 import {Chest} from "./Chest.js"
-let camera, scene, renderer, water, ship, chest; 
-let moveForward = false, moveBackward = false, moveRight = false, moveLeft = false;
+import { Enemy } from "./Enemy.js";
+let camera, scene, renderer, water, ship, enemy; 
+let chests = [];
+let enemies = [];
+
 let CameraView = [new THREE.Vector3(0, -4, -10), new THREE.Vector3(0, -8, -10)];
 let viewMode = 0;
 let Yaxis = new THREE.Vector3(0, 1, 0);
-let rotateSpeed = 1;
-let moveSpeed = 5;
 let clock = new THREE.Clock();
 let lastChest = 5;
-let properY = -0.4;
-let properYChest = -0.1;
 let points = 0;
-let chests = [];
 function collision(a, b) {
 	var box1 = new THREE.Box3().setFromObject(a);
 	var box2 = new THREE.Box3().setFromObject(b);
@@ -52,19 +50,18 @@ function init() {
 	loadWater(scene);
 
 	ship = new Ship(scene);
+	let enemy = new Enemy(scene);
+	enemies.push(enemy);
 	
 }
-function updateCamera(pos) {
+function updateCamera() {
+	if (!ship.obj) return;
+	let pos = ship.obj.position;
 	let view = CameraView[viewMode].clone() 
 	view.applyAxisAngle(Yaxis, ship.obj.rotation.y);
 	let cameraPos = ship.obj.position.clone().sub(view);
 	camera.lookAt(pos);
 	camera.position.set(cameraPos.x, cameraPos.y, cameraPos.z);
-}
-function calcForwardVector() {
-	let ForwardVector = new THREE.Vector3(0, 0, -1);
-	ForwardVector.applyAxisAngle(Yaxis, ship.obj.rotation.y);
-	return ForwardVector;
 }
 function generateChest(delta) {
 	lastChest += delta;
@@ -90,6 +87,7 @@ function updatePoints() {
 	updateHUD();
 }
 function checkChestCollected() {
+	if (!ship.obj) return;
 	for (let i in chests) {
 		let chest = chests[i];
 		if (chest.obj) {
@@ -102,6 +100,23 @@ function checkChestCollected() {
 		}
 	}
 }
+function checkEnemyCollision() {
+	if (!ship.obj) return;
+	for (let i in enemies) {
+		let enemy = enemies[i];	
+		if (enemy.obj) {
+			if (collision(enemy.obj, ship.obj)) {
+				scene.remove(ship.obj);
+				ship.dead = 1;
+			}
+		}
+	}
+}
+function bobbleChests(milli) {
+	for (let i in chests) {
+		chests[i].bobble(milli);	
+	}
+}
 // Draw the scene every time the screen is refreshed
 function animate() {
 	requestAnimationFrame(animate);
@@ -109,75 +124,44 @@ function animate() {
 	let delta = clock.getDelta();
 	let d = new Date();
 	let milli = d.getTime();
-	let generateFrame = !generateChest(delta);
-	if (ship.obj) {	 
-		let pos = ship.obj.position;
-		ship.obj.position.set(pos.x, properY + Math.sin(milli / 350) * 0.25, pos.z);
-		checkChestCollected();
-		for (let i in chests) {
-			let chest = chests[i];
-			if (chest.obj) {
-				let pos2 = chest.obj.position;
-				chest.obj.position.set(pos2.x, properYChest + Math.sin(milli / 225) * 0.1, pos2.z);
-			}
-			
-		}
-		let ForwardVector = calcForwardVector();
-		ForwardVector.multiplyScalar(delta * moveSpeed);
-
-		updateCamera(pos);
-		if (moveForward) {
-			ship.obj.position.add(ForwardVector);
-			water.position.add(ForwardVector);
-		}
-		if (moveBackward) {
-			ship.obj.position.sub(ForwardVector);
-			water.position.sub(ForwardVector);
-		}
-		if (moveLeft) {
-			ship.obj.rotation.y += rotateSpeed * delta;
-			ship.obj.rotation.z = 0.3;
-		}
-		if (moveRight) {
-			ship.obj.rotation.y -= rotateSpeed * delta;
-			ship.obj.rotation.z = -0.3;
-		}
-	}
-	if (generateFrame)
-		renderer.render(scene, camera);
+	generateChest(delta);
+	ship.bobble(milli);
+	bobbleChests(milli);
+	updateCamera();
+	checkChestCollected();
+	checkEnemyCollision();
+	if (ship.obj && !ship.dead) enemies[0].move(delta, ship.obj.position);
+	ship.move(delta, water);
+	renderer.render(scene, camera);
 
 }
 
 function onWindowResize() {
-	// Camera frustum aspect ratio
 	camera.aspect = window.innerWidth / window.innerHeight;
-	// After making changes to aspect
 	camera.updateProjectionMatrix();
-	// Reset size
 	renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
 const onKeyDown = function (event) {
 	switch (event.code) {
-
 		case 'ArrowUp':
 		case 'KeyW':
-			moveForward = true;
+			ship.moveForward = true;
 			break;
 
 		case 'ArrowLeft':
 		case 'KeyA':
-			moveLeft = true;
+			ship.moveLeft = true;
 			break;
 
 		case 'ArrowDown':
 		case 'KeyS':
-			moveBackward = true;
+			ship.moveBackward = true;
 			break;
 
 		case 'ArrowRight':
 		case 'KeyD':
-			moveRight = true;
+			ship.moveRight = true;
 			break;
 	}
 
@@ -189,25 +173,25 @@ const onKeyUp = function (event) {
 
 		case 'ArrowUp':
 		case 'KeyW':
-			moveForward = false;
+			ship.moveForward = false;
 			ship.obj.rotation.x = 0.0; 
 			break;
 
 		case 'ArrowLeft':
 		case 'KeyA':
-			moveLeft = false;
+			ship.moveLeft = false;
 			ship.obj.rotation.z = 0.0;
 			break;
 
 		case 'ArrowDown':
 		case 'KeyS':
+			ship.moveBackward = false;
 			ship.obj.rotation.x = 0.0; 
-			moveBackward = false;
 			break;
 
 		case 'ArrowRight':
 		case 'KeyD':
-			moveRight = false;
+			ship.moveRight = false;
 			ship.obj.rotation.z = 0.0;
 			break;
 		case 'KeyQ':

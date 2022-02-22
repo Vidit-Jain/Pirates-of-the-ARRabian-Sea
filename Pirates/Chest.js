@@ -5,8 +5,16 @@ export class Chest{
     constructor(scene, position){
         this.collected = 0;
         this.loadModel(scene, position);
+        this.baseY = -0.1;
+        this.bobblePeriod = 2.25;
+        this.amplitude = 0.1;
     }
-    
+    bobble(milli) {
+        if (this.obj) {
+            let pos = this.obj.position;
+            this.obj.position.set(pos.x, this.baseY + Math.sin(milli / (this.bobblePeriod * 100)) * this.amplitude, pos.z);
+        }
+    } 
     loadModel(scene, position){
         var loader = new GLTFLoader();
         loader.load("./models/chest.glb", (obj) => {
