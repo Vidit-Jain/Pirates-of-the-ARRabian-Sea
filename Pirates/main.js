@@ -52,8 +52,6 @@ function init() {
 	loadWater(scene);
 
 	ship = new Ship(scene);
-	// let chestPos = new THREE.Vector3(10.5, 1.5, -5);
-	// chest = new Chest(scene,chestPos);
 	
 }
 function updateCamera(pos) {
@@ -84,6 +82,26 @@ function generateChest(delta) {
 	}
 	else return false;
 }
+function updateHUD() {
+	document.querySelector('#HUD').innerHTML = `Score: ${points}`
+}
+function updatePoints() {
+	points++;
+	updateHUD();
+}
+function checkChestCollected() {
+	for (let i in chests) {
+		let chest = chests[i];
+		if (chest.obj) {
+			if (chest.collected === 0 && collision(ship.obj, chest.obj)) {
+				scene.remove(chest.obj);
+				chest.collected = 1;
+				chests.splice(i, 1);
+				updatePoints();
+			}
+		}
+	}
+}
 // Draw the scene every time the screen is refreshed
 function animate() {
 	requestAnimationFrame(animate);
@@ -95,30 +113,15 @@ function animate() {
 	if (ship.obj) {	 
 		let pos = ship.obj.position;
 		ship.obj.position.set(pos.x, properY + Math.sin(milli / 350) * 0.25, pos.z);
+		checkChestCollected();
 		for (let i in chests) {
 			let chest = chests[i];
 			if (chest.obj) {
 				let pos2 = chest.obj.position;
 				chest.obj.position.set(pos2.x, properYChest + Math.sin(milli / 225) * 0.1, pos2.z);
-				// Collision detection
-				if (chest.collected === 0 && collision(ship.obj, chest.obj)) {
-					scene.remove(chest.obj);
-					chest.collected = 1;
-					chests.splice(i, 1);
-					console.log("hoory");
-				}
 			}
+			
 		}
-		// if (chest.obj) {
-		// 	let pos2 = chest.obj.position;
-		// 	chest.obj.position.set(pos2.x, properYChest + Math.sin(milli / 225) * 0.1, pos2.z);
-		// 	// Collision detection
-		// 	if (chest.collected === 0 && collision(ship.obj, chest.obj)) {
-		// 		scene.remove(chest.obj);
-		// 		chest.collected = 1;
-		// 		console.log("hoory");
-		// 	}
-		// } 
 		let ForwardVector = calcForwardVector();
 		ForwardVector.multiplyScalar(delta * moveSpeed);
 
