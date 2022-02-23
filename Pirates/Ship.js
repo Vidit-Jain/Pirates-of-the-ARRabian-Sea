@@ -17,6 +17,7 @@ export class Ship {
         this.dead = 0;
         this.bullet = new Bullet();
         this.lastShot = 5;
+        this.health = 3;
     }
     bobble(milli) {
         if (!this.obj) return;

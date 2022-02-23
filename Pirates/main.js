@@ -6,7 +6,6 @@ import { Water } from './jsm/objects/Water.js';
 import { Sky } from './jsm/objects/Sky.js';
 let camera, scene, renderer, water, ship, enemy; 
 let isOver = 0;
-let gameOver;
 let chests = [];
 let enemies = [];
 
@@ -28,7 +27,6 @@ function collision(a, b) {
 }
 function init() {
 	scene = new THREE.Scene();
-	gameOver = new THREE.Scene();
 	
 	camera = new THREE.PerspectiveCamera(
 		75,
@@ -72,7 +70,9 @@ function init() {
 	scene.add( sky );
 
 	const skyUniforms = sky.material.uniforms;
-
+	// Water text end
+	// setLighting(scene);
+	// loadWater(scene);
 	skyUniforms[ 'turbidity' ].value = 10;
 	skyUniforms[ 'rayleigh' ].value = 2;
 	skyUniforms[ 'mieCoefficient' ].value = 0.005;
@@ -161,10 +161,14 @@ function generateEnemy(delta) {
 	else return false;
 }
 function updateHUD() {
-	document.querySelector('#HUD').innerHTML = 
+	document.querySelector('#HUD2').innerHTML = 
 	`Score: ${points} <br> 
+	 Treasures Collected: ${treasures_collected}<br>
+	`;
+	document.querySelector("#HUD").innerHTML =
+	`
 	 Time: ${Math.floor(curr_time)}<br>
-	 Treasures Collected: ${treasures_collected}	
+	 Ship Health: ${ship.health}
 	`
 }
 function updatePoints(x) {
@@ -227,9 +231,14 @@ function playerDied() {
 		var box = new THREE.Box3().setFromObject(ship.obj);
 		for (let i in enemies) {
 			if (enemies[i].killed(box)) {
-				scene.remove(ship.obj);
-				ship.dead = 1;
-				return true;	
+				ship.health--;
+				enemies[i].bullet.alive = 0;
+				scene.remove(enemies[i].bullet.obj);
+				if (ship.health === 0) {
+					scene.remove(ship.obj);
+					ship.dead = 1;
+					return true;	
+				}
 			}
 		}
 	}
