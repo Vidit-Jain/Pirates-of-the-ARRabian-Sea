@@ -33,7 +33,6 @@ function loadWater(scene) {
 	texture.repeat.set(30, 30);
 	const material = new THREE.MeshBasicMaterial({ map: texture });
 	water = new THREE.Mesh(geometry, material);
-	console.log(water);
 	scene.add(water);
 }
 function init() {
@@ -148,8 +147,25 @@ function checkEnemiesKilled() {
 function enemyMove(delta) {
 	if (ship.obj && !ship.dead) {
 		for (let i in enemies) {
-			enemies[i].move(delta, ship.obj.position);
+			enemies[i].move(delta, ship.obj.position, scene);
 		}
+	}
+}
+function playerDied() {
+	if (ship.obj && !ship.dead) {
+		var box = new THREE.Box3().setFromObject(ship.obj);
+		for (let i in enemies) {
+			if (enemies[i].killed(box)) {
+				scene.remove(ship.obj);
+				break;
+			}
+		}
+	}
+}
+
+function enemyShoot() {
+	for (let i in enemies) {
+		enemies[i].shoot(scene);
 	}
 }
 // Draw the scene every time the screen is refreshed
@@ -167,6 +183,8 @@ function animate() {
 	checkChestCollected();
 	checkEnemyCollision();
 	checkEnemiesKilled();
+	enemyShoot();
+	playerDied();
 	enemyMove(delta);
 	ship.move(delta, water, scene);
 	renderer.render(scene, camera);
@@ -236,7 +254,6 @@ const onKeyUp = function (event) {
 			break;
 		case 'Space':
 			ship.shoot(scene);
-			console.log("HI");
 			break;
 	}
 
