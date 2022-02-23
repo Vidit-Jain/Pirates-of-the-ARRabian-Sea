@@ -11,6 +11,7 @@ let viewMode = 0;
 let Yaxis = new THREE.Vector3(0, 1, 0);
 let clock = new THREE.Clock();
 let lastChest = 5;
+let lastEnemy = 10;
 let points = 0;
 function collision(a, b) {
 	var box1 = new THREE.Box3().setFromObject(a);
@@ -51,8 +52,6 @@ function init() {
 	loadWater(scene);
 
 	ship = new Ship(scene);
-	let enemy = new Enemy(scene);
-	enemies.push(enemy);
 	
 }
 function updateCamera() {
@@ -68,7 +67,6 @@ function generateChest(delta) {
 	lastChest += delta;
 	if (lastChest >= 5) {
 		let radius = Math.random() * 40 + 15;
-		console.log(radius);
 		let angle = Math.random() * 360;
 		let x = radius * Math.cos(angle);
 		let z = radius * Math.sin(angle);
@@ -76,6 +74,22 @@ function generateChest(delta) {
 		let chest = new Chest(scene, chestPos);
 		chests.push(chest);
 		lastChest = 0; 
+		return true;
+	}
+	else return false;
+}
+function generateEnemy(delta) {
+	lastEnemy += delta;
+	if (lastEnemy >= 15) {
+		let radius = 80; 
+		let angle = Math.random() * 360;
+		let x = radius * Math.cos(angle);
+		let z = radius * Math.sin(angle);
+		let enemyPos = new THREE.Vector3(x, 0, z);
+		console.log(enemyPos);
+		let enemy = new Enemy(scene, enemyPos);
+		enemies.push(enemy);
+		lastEnemy = 0; 
 		return true;
 	}
 	else return false;
@@ -125,10 +139,16 @@ function checkEnemiesKilled() {
 			var box = new THREE.Box3().setFromObject(enemy.obj);
 			if (ship.killed(box)) {
 				scene.remove(enemies[i].obj);
-				console.log("YO\n");
 				updatePoints(15);
 				enemies.splice(i, 1);
 			}
+		}
+	}
+}
+function enemyMove(delta) {
+	if (ship.obj && !ship.dead) {
+		for (let i in enemies) {
+			enemies[i].move(delta, ship.obj.position);
 		}
 	}
 }
@@ -140,13 +160,14 @@ function animate() {
 	let d = new Date();
 	let milli = d.getTime();
 	generateChest(delta);
+	generateEnemy(delta);
 	ship.bobble(milli);
 	bobbleChests(milli);
 	updateCamera();
 	checkChestCollected();
 	checkEnemyCollision();
 	checkEnemiesKilled();
-	if (ship.obj && !ship.dead && enemies.length != 0) enemies[0].move(delta, ship.obj.position);
+	enemyMove(delta);
 	ship.move(delta, water, scene);
 	renderer.render(scene, camera);
 
