@@ -165,7 +165,7 @@ function playerDied() {
 
 function enemyShoot() {
 	for (let i in enemies) {
-		enemies[i].shoot(scene);
+		enemies[i].shoot(scene, ship.obj.position);
 	}
 }
 // Draw the scene every time the screen is refreshed

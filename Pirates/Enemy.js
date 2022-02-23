@@ -56,9 +56,9 @@ export class Enemy{
             this.bullet.move(delta, scene);
         }
     }
-    shoot(scene) {
+    shoot(scene, position) {
         if (this.lastShot >= 4) {
-            let forwardVector = this.calcForwardVector();
+            let forwardVector = position.clone().sub(this.obj.position); 
             forwardVector.normalize();
             this.lastShot = 0;
             this.bullet.shoot(forwardVector, this.obj.position.clone(), scene);
