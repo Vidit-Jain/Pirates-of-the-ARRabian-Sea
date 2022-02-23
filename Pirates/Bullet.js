@@ -4,8 +4,8 @@ let Yaxis = new THREE.Vector3(0, 1, 0);
 export class Bullet {
     constructor(){
         this.initRenderData();
-        this.moveSpeed = 0.4;
-        this.gravity = 0.5;
+        this.moveSpeed = 0.7;
+        this.gravity = 0.3;
         this.alive = 0;
     }
     calcForwardVector() {
@@ -15,15 +15,15 @@ export class Bullet {
     }
     createBullet() {
         const geometry = new THREE.SphereGeometry(0.33);
-        const material = new THREE.MeshBasicMaterial({ color: 0xffffff});
+        const material = new THREE.MeshBasicMaterial({ color: 0x000000});
         this.obj = new THREE.Mesh(geometry, material);
     }
     shoot(forwardVector, initPosition, scene) {
         this.forwardVector = forwardVector;
         this.alive = 1;
-        this.velocityY = 0.3;
+        this.velocityY = 0.0;
         console.log(initPosition);
-        this.obj.position.set(initPosition.x, 2, initPosition.z);
+        this.obj.position.set(initPosition.x, 3, initPosition.z);
         scene.add(this.obj);
         setTimeout(function() {
             scene.remove(this.obj);
@@ -31,11 +31,20 @@ export class Bullet {
         }, 2000);
     }
     move(delta, scene) {
+        if (this.alive === 0) return;
         this.velocityY -= delta * this.gravity;
         let movement = this.forwardVector.clone();
         movement.multiplyScalar(this.moveSpeed);
         movement.add(new THREE.Vector3(0, this.velocityY, 0));
         this.obj.position.add(movement);
+        if (this.obj.position.y <= 0) {
+            this.alive = 0;
+            scene.remove(this.obj);
+        }
+    }
+    collides(box) {
+        let sphere = new THREE.Sphere(this.obj.position, 0.33);
+        return box.intersectsSphere(sphere);
     }
     initRenderData(){
         this.createBullet();

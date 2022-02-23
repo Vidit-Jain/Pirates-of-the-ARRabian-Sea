@@ -11,6 +11,7 @@ export class Enemy{
         this.moveBackward = false
         this.moveRight = false
         this.moveLeft = false;
+        this.dead = 0;
     }
     bobble(milli) {
         if (!this.obj) return;

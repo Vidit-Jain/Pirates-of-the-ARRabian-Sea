@@ -40,7 +40,7 @@ export class Ship {
             scene.add(obj.scene);
         });
     }
-    move(delta, water) {
+    move(delta, water, scene) {
         if (this.obj) {	 
             let ForwardVector = this.calcForwardVector();
             ForwardVector.multiplyScalar(delta * this.moveSpeed);
@@ -62,12 +62,16 @@ export class Ship {
             }
         }
         if (this.bullet.alive) {
-            this.bullet.move(delta);
+            this.bullet.move(delta, scene);
         }
     }
     shoot(scene) {
         let forwardVector = this.calcForwardVector();
         forwardVector.normalize();
         this.bullet.shoot(forwardVector, this.obj.position.clone(), scene);
+    }
+    killed(box) {
+        if (this.bullet.alive === 0) return false;
+        return this.bullet.collides(box);
     }
 }

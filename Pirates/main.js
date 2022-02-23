@@ -83,8 +83,8 @@ function generateChest(delta) {
 function updateHUD() {
 	document.querySelector('#HUD').innerHTML = `Score: ${points}`
 }
-function updatePoints() {
-	points++;
+function updatePoints(x) {
+	points += x;
 	updateHUD();
 }
 function checkChestCollected() {
@@ -96,7 +96,7 @@ function checkChestCollected() {
 				scene.remove(chest.obj);
 				chest.collected = 1;
 				chests.splice(i, 1);
-				updatePoints();
+				updatePoints(10);
 			}
 		}
 	}
@@ -118,6 +118,20 @@ function bobbleChests(milli) {
 		chests[i].bobble(milli);	
 	}
 }
+function checkEnemiesKilled() {
+	for (let i in enemies) {
+		let enemy = enemies[i];
+		if (enemy.obj) {
+			var box = new THREE.Box3().setFromObject(enemy.obj);
+			if (ship.killed(box)) {
+				scene.remove(enemies[i].obj);
+				console.log("YO\n");
+				updatePoints(15);
+				enemies.splice(i, 1);
+			}
+		}
+	}
+}
 // Draw the scene every time the screen is refreshed
 function animate() {
 	requestAnimationFrame(animate);
@@ -131,8 +145,9 @@ function animate() {
 	updateCamera();
 	checkChestCollected();
 	checkEnemyCollision();
-	if (ship.obj && !ship.dead) enemies[0].move(delta, ship.obj.position);
-	ship.move(delta, water);
+	checkEnemiesKilled();
+	if (ship.obj && !ship.dead && enemies.length != 0) enemies[0].move(delta, ship.obj.position);
+	ship.move(delta, water, scene);
 	renderer.render(scene, camera);
 
 }

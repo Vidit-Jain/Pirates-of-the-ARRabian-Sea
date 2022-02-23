@@ -8,11 +8,12 @@ export class Chest{
         this.baseY = -0.3;
         this.bobblePeriod = 2.25;
         this.amplitude = 0.4;
+        this.randomStart = Math.random() * 1000;
     }
     bobble(milli) {
         if (this.obj) {
             let pos = this.obj.position;
-            this.obj.position.set(pos.x, this.baseY + Math.sin(milli / (this.bobblePeriod * 100)) * this.amplitude, pos.z);
+            this.obj.position.set(pos.x, this.baseY + Math.sin((milli + this.randomStart) / (this.bobblePeriod * 100)) * this.amplitude, pos.z);
         }
     } 
     loadModel(scene, position){
