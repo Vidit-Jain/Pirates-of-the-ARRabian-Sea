@@ -212,6 +212,8 @@ function checkEnemiesKilled() {
 		if (enemy.obj) {
 			var box = new THREE.Box3().setFromObject(enemy.obj);
 			if (ship.killed(box)) {
+				ship.bullet.alive = 0;
+				scene.remove(ship.bullet.obj);
 				scene.remove(enemies[i].obj);
 				updatePoints(15);
 				enemies.splice(i, 1);
