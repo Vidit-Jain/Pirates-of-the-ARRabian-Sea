@@ -3,6 +3,8 @@ import {Ship} from "./Ship.js"
 import {Chest} from "./Chest.js"
 import { Enemy } from "./Enemy.js";
 let camera, scene, renderer, water, ship, enemy; 
+let isOver = 0;
+let gameOver;
 let chests = [];
 let enemies = [];
 
@@ -13,6 +15,7 @@ let clock = new THREE.Clock();
 let lastChest = 5;
 let lastEnemy = 10;
 let points = 0;
+const resultsElement = document.getElementById("results");
 function collision(a, b) {
 	var box1 = new THREE.Box3().setFromObject(a);
 	var box2 = new THREE.Box3().setFromObject(b);
@@ -37,6 +40,8 @@ function loadWater(scene) {
 }
 function init() {
 	scene = new THREE.Scene();
+	gameOver = new THREE.Scene();
+	
 	camera = new THREE.PerspectiveCamera(
 		75,
 		window.innerWidth / window.innerHeight,
@@ -46,7 +51,6 @@ function init() {
 	renderer = new THREE.WebGLRenderer({ antialias: true });
 	renderer.setSize(window.innerWidth, window.innerHeight);
 	document.body.appendChild(renderer.domElement);
-	
 	setLighting(scene);
 	loadWater(scene);
 
@@ -171,10 +175,12 @@ function playerDied() {
 		for (let i in enemies) {
 			if (enemies[i].killed(box)) {
 				scene.remove(ship.obj);
-				break;
+				ship.dead = 1;
+				return true;	
 			}
 		}
 	}
+	return false;
 }
 
 function enemyShoot() {
@@ -186,22 +192,30 @@ function enemyShoot() {
 function animate() {
 	requestAnimationFrame(animate);
 
-	let delta = clock.getDelta();
-	let d = new Date();
-	let milli = d.getTime();
-	generateChest(delta);
-	generateEnemy(delta);
-	ship.bobble(milli);
-	bobbleChests(milli);
-	updateCamera();
-	checkChestCollected();
-	checkEnemyCollision();
-	checkEnemiesKilled();
-	enemyShoot();
-	playerDied();
-	enemyMove(delta);
-	ship.move(delta, water, scene);
-	renderer.render(scene, camera);
+	if (isOver === 0) {
+		let delta = clock.getDelta();
+		let d = new Date();
+		let milli = d.getTime();
+		generateChest(delta);
+		generateEnemy(delta);
+		ship.bobble(milli);
+		bobbleChests(milli);
+		updateCamera();
+		checkChestCollected();
+		checkEnemyCollision();
+		checkEnemiesKilled();
+		enemyShoot();
+		playerDied();
+		enemyMove(delta);
+		ship.move(delta, water, scene);
+		if (ship.dead === 1) isOver = 1;
+		renderer.render(scene, camera);
+	}
+	else {
+		document.querySelector('#results').innerHTML = `Game Over!<br>Score: ${points}`
+		if (resultsElement) resultsElement.style.display = "flex";
+		renderer.setAnimationLoop(null); // Stop animation loop
+	}
 
 }
 
