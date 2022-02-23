@@ -5,9 +5,9 @@ export class Chest{
     constructor(scene, position){
         this.collected = 0;
         this.loadModel(scene, position);
-        this.baseY = -0.1;
+        this.baseY = -0.3;
         this.bobblePeriod = 2.25;
-        this.amplitude = 0.1;
+        this.amplitude = 0.4;
     }
     bobble(milli) {
         if (this.obj) {
@@ -17,10 +17,10 @@ export class Chest{
     } 
     loadModel(scene, position){
         var loader = new GLTFLoader();
-        loader.load("./models/chest.glb", (obj) => {
+        loader.load("./models/treasure.glb", (obj) => {
             obj.scene.scale.set(0.1,0.1,0.1);
-            obj.scene.rotation.x = 0.5;
-            obj.scene.rotation.z = 0.5;
+            obj.scene.rotation.x = -0.5;
+            obj.scene.rotation.z = -0.5;
             obj.scene.position.set(position.x, position.y, position.z);
             this.obj = obj.scene;
             scene.add(obj.scene);
