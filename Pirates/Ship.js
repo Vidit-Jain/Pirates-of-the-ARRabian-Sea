@@ -1,7 +1,8 @@
 import * as THREE from "three"
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { Bullet } from "./Bullet";
 let Yaxis = new THREE.Vector3(0, 1, 0);
-export class Ship{
+export class Ship {
     constructor(scene){
         this.initRenderData(scene);
         this.baseY = -0.7;
@@ -14,6 +15,8 @@ export class Ship{
         this.moveRight = false
         this.moveLeft = false;
         this.dead = 0;
+        this.bullet = new Bullet();
+        this.lastShot = 5;
     }
     bobble(milli) {
         if (!this.obj) return;
@@ -58,5 +61,13 @@ export class Ship{
                 this.obj.rotation.z = -0.3;
             }
         }
+        if (this.bullet.alive) {
+            this.bullet.move(delta);
+        }
+    }
+    shoot(scene) {
+        let forwardVector = this.calcForwardVector();
+        forwardVector.normalize();
+        this.bullet.shoot(forwardVector, this.obj.position.clone(), scene);
     }
 }

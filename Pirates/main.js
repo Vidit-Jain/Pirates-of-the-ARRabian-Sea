@@ -32,6 +32,7 @@ function loadWater(scene) {
 	texture.repeat.set(30, 30);
 	const material = new THREE.MeshBasicMaterial({ map: texture });
 	water = new THREE.Mesh(geometry, material);
+	console.log(water);
 	scene.add(water);
 }
 function init() {
@@ -196,6 +197,10 @@ const onKeyUp = function (event) {
 			break;
 		case 'KeyQ':
 			viewMode = 1 - viewMode;
+			break;
+		case 'Space':
+			ship.shoot(scene);
+			console.log("HI");
 			break;
 	}
 
