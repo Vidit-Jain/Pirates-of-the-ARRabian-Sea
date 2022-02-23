@@ -5,7 +5,7 @@ export class Chest{
     constructor(scene, position){
         this.collected = 0;
         this.loadModel(scene, position);
-        this.baseY = -0.3;
+        this.baseY = -0.6;
         this.bobblePeriod = 2.25;
         this.amplitude = 0.4;
         this.randomStart = Math.random() * 1000;

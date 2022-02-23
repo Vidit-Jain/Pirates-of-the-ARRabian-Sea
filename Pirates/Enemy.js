@@ -29,8 +29,8 @@ export class Enemy{
     }  
     initRenderData(scene, pos){
         var loader = new GLTFLoader();
-        loader.load("./models/ship_light.glb", (obj) => {
-            obj.scene.scale.set(0.1,0.1,0.1);
+        loader.load("./models/ship_dark.glb", (obj) => {
+            obj.scene.scale.set(1,1,1);
             obj.scene.position.set(pos.x, -0.7, pos.z);
 
             this.obj = obj.scene;

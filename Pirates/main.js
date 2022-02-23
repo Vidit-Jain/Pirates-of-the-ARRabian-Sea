@@ -2,6 +2,8 @@ import * as THREE from "three"
 import {Ship} from "./Ship.js"
 import {Chest} from "./Chest.js"
 import { Enemy } from "./Enemy.js";
+import { Water } from './jsm/objects/Water.js';
+import { Sky } from './jsm/objects/Sky.js';
 let camera, scene, renderer, water, ship, enemy; 
 let isOver = 0;
 let gameOver;
@@ -12,6 +14,7 @@ let CameraView = [new THREE.Vector3(0, -4, -10), new THREE.Vector3(0, -8, -10)];
 let viewMode = 0;
 let Yaxis = new THREE.Vector3(0, 1, 0);
 let clock = new THREE.Clock();
+let sun;
 let lastChest = 5;
 let lastEnemy = 10;
 let points = 0;
@@ -48,11 +51,83 @@ function init() {
 		0.1,
 		1000
 	);
-	renderer = new THREE.WebGLRenderer({ antialias: true });
+
+	// Water text
+	sun = new THREE.Vector3();
+
+	// Water
+
+	const waterGeometry = new THREE.PlaneGeometry( 10000, 10000 );
+
+	water = new Water(
+		waterGeometry,
+		{
+			textureWidth: 512,
+			textureHeight: 512,
+			waterNormals: new THREE.TextureLoader().load( 'textures/waternormals.jpg', function ( texture ) {
+
+				texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+
+			} ),
+			sunDirection: new THREE.Vector3(),
+			sunColor: 0xffffff,
+			waterColor: 0x001e0f,
+			distortionScale: 3.7,
+			fog: scene.fog !== undefined
+		}
+	);
+
+	water.rotation.x = - Math.PI / 2;
+
+	scene.add( water );
+
+	// Skybox
+
+	const sky = new Sky();
+	sky.scale.setScalar( 10000 );
+	scene.add( sky );
+
+	const skyUniforms = sky.material.uniforms;
+
+	skyUniforms[ 'turbidity' ].value = 10;
+	skyUniforms[ 'rayleigh' ].value = 2;
+	skyUniforms[ 'mieCoefficient' ].value = 0.005;
+	skyUniforms[ 'mieDirectionalG' ].value = 0.8;
+
+	const parameters = {
+		elevation: 2,
+		azimuth: 180
+	};
+
+	renderer = new THREE.WebGLRenderer();
 	renderer.setSize(window.innerWidth, window.innerHeight);
+	renderer.toneMapping = THREE.ACESFilmicToneMapping;
 	document.body.appendChild(renderer.domElement);
-	setLighting(scene);
-	loadWater(scene);
+	const pmremGenerator = new THREE.PMREMGenerator( renderer );
+
+	function updateSun() {
+
+		const phi = THREE.MathUtils.degToRad( 90 - parameters.elevation );
+		const theta = THREE.MathUtils.degToRad( parameters.azimuth );
+
+		sun.setFromSphericalCoords( 1, phi, theta );
+
+		sky.material.uniforms[ 'sunPosition' ].value.copy( sun );
+		water.material.uniforms[ 'sunDirection' ].value.copy( sun ).normalize();
+
+		scene.environment = pmremGenerator.fromScene( sky ).texture;
+
+	}
+	const waterUniforms = water.material.uniforms;
+	updateSun();
+
+	//
+
+
+	
+	// Water text end
+	// setLighting(scene);
+	// loadWater(scene);
 
 	ship = new Ship(scene);
 	
@@ -191,6 +266,7 @@ function enemyShoot() {
 // Draw the scene every time the screen is refreshed
 function animate() {
 	requestAnimationFrame(animate);
+	water.material.uniforms[ 'time' ].value += 1.0 / 450.0;
 
 	if (isOver === 0) {
 		let delta = clock.getDelta();
