@@ -18,28 +18,13 @@ let sun;
 let lastChest = 5;
 let lastEnemy = 10;
 let points = 0;
+let curr_time = 0;
+let treasures_collected = 0;
 const resultsElement = document.getElementById("results");
 function collision(a, b) {
 	var box1 = new THREE.Box3().setFromObject(a);
 	var box2 = new THREE.Box3().setFromObject(b);
 	return box1.intersectsBox(box2);
-}
-function setLighting(scene) {
-	const DirectionalLight = new THREE.DirectionalLight(0xffffff, 0.3);
-	DirectionalLight.position.set(2, 2, 5);
-	const Ambientlight = new THREE.AmbientLight(0xffffff, 0.7); 
-	scene.add(Ambientlight);
-	scene.add(DirectionalLight);
-}
-function loadWater(scene) {
-	const geometry = new THREE.BoxGeometry(1000, 0.2, 1000);
-	const texture = new THREE.TextureLoader().load('textures/water.jpg');
-	texture.wrapS = THREE.RepeatWrapping;
-	texture.wrapT = THREE.RepeatWrapping;
-	texture.repeat.set(30, 30);
-	const material = new THREE.MeshBasicMaterial({ map: texture });
-	water = new THREE.Mesh(geometry, material);
-	scene.add(water);
 }
 function init() {
 	scene = new THREE.Scene();
@@ -81,7 +66,6 @@ function init() {
 
 	scene.add( water );
 
-	// Skybox
 
 	const sky = new Sky();
 	sky.scale.setScalar( 10000 );
@@ -118,26 +102,16 @@ function init() {
 		scene.environment = pmremGenerator.fromScene( sky ).texture;
 
 	}
-	const waterUniforms = water.material.uniforms;
 	updateSun();
 
-	//
-
-
-	
-	// Water text end
-	// setLighting(scene);
-	// loadWater(scene);
 
 	ship = new Ship(scene);
 	
 	const listener = new THREE.AudioListener();
 	camera.add( listener );
 
-	// create a global audio source
 	const sound = new THREE.Audio( listener );
 
-	// load a sound and set it as the Audio object's buffer
 	const audioLoader = new THREE.AudioLoader();
 	audioLoader.load( 'sounds/pirates.mp3', function( buffer ) {
 		sound.setBuffer( buffer );
@@ -187,11 +161,14 @@ function generateEnemy(delta) {
 	else return false;
 }
 function updateHUD() {
-	document.querySelector('#HUD').innerHTML = `Score: ${points}`
+	document.querySelector('#HUD').innerHTML = 
+	`Score: ${points} <br> 
+	 Time: ${Math.floor(curr_time)}<br>
+	 Treasures Collected: ${treasures_collected}	
+	`
 }
 function updatePoints(x) {
 	points += x;
-	updateHUD();
 }
 function checkChestCollected() {
 	if (!ship.obj) return;
@@ -201,6 +178,7 @@ function checkChestCollected() {
 			if (chest.collected === 0 && collision(ship.obj, chest.obj)) {
 				scene.remove(chest.obj);
 				chest.collected = 1;
+				treasures_collected++;
 				chests.splice(i, 1);
 				updatePoints(10);
 			}
@@ -267,9 +245,11 @@ function enemyShoot() {
 function animate() {
 	requestAnimationFrame(animate);
 	water.material.uniforms[ 'time' ].value += 1.0 / 450.0;
+	updateHUD();
 
 	if (isOver === 0) {
 		let delta = clock.getDelta();
+		curr_time += delta;
 		let d = new Date();
 		let milli = d.getTime();
 		generateChest(delta);
