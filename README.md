@@ -1,6 +1,5 @@
 ## Pirates of the ARRabian Sea
-A game made using the three.js library.
-
+A 3d game using the three.js library where you have to control a ship to destroy enemy ships, and collect as many treasure chests as possible
 # Installation
 ```
 cd Pirates
